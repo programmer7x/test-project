@@ -5,12 +5,6 @@ const Category = require('../../categories/model/Category');
 class Product extends Model {} // Extending Sequelize's Model class
 Product.init({
   // Your Product model fields here
-  id: {
-    type: DataTypes.BIGINT,
-    autoIncrement: true,
-    primaryKey: true,
-    allowNull: false
-    },
     title: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -22,16 +16,14 @@ Product.init({
     price: {
         type: DataTypes.INTEGER,
         allowNull: false,
-    },
-    createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: Date.now
     }
 }, {
   sequelize,
   modelName: 'Product',
   // Other options
 });
+
+Product.sync({force: true})
 
 // const Product = sequelize.define('Product', {
 //     id: {

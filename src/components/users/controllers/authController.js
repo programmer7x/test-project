@@ -90,7 +90,7 @@ exports.protect = catchAsync(async (req, res, next) => {
       'The user belonging to this token does no longer exist!',
       401
     );
-  }
+  }``
 
   const changedPassword = currentUser.isChangedPassword(decodeToken.iat);
   if (changedPassword) {
