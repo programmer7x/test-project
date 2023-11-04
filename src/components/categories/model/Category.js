@@ -1,55 +1,43 @@
-const {Sequelize, DataTypes, Model} = require('sequelize')
-const sequelize = require('../../../connectionDB');
-const Product = require('../../products/model/Product.js');
+const client = require('../../../connectionDB')
+const AppError = require('../../../utils/AppError')
 
-class Category extends Model {} // Extending Sequelize's Model class
-Category.init({
-  // Your Category model fields here
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    },
-    // parentCategoryId: {
-    //     type: DataTypes.INTEGER
-    // }
-}, {
-  sequelize,
-  modelName: 'Category',
-  // Other options
-});
+class Category {
+    constructor() {}
 
+    static async create (options) {
+        const keys = Object.keys(options);
+        const values = Object.values(options)
 
-// const Category = sequelize.define('Category', {
-//     name: {
-//         type: DataTypes.STRING,
-//         allowNull: false,
-//     },
-//     parentCategoryId: {
-//         type: DataTypes.INTEGER
-//     },
-//     createdAt: {
-//         type: DataTypes.DATE,
-//         default: Date.now
-//     }
-// });
+        const queryStr = `INSERT INTO categories (${keys.join(', ')}) VALUES (${values.map((key, i) => `$${i + 1}`)}) RETURNING *;`;
 
+        return client.query(queryStr, values);
+    }
 
-Category.sync({ force: true })
+    static async findAll (options) {
+        const queryStr = `SELECT * FROM categories;`;
+        return client.query(queryStr);
+    }
 
-Category.belongsToMany(Product, {
-    through: 'ProductCategory', // Use the same junction table
-    foreignKey: 'categoryId', // The foreign key in the junction table that references Category
-    otherKey: 'productId', // The foreign key in the junction table that references Product
-});
+    static async findById (categoryId) {
+        const queryStr = `SELECT * FROM categories WHERE id = $1;`;
+        const values = [categoryId]
+        return client.query(queryStr, values);
+    }
 
-Category.hasMany(Category, {
-    as: 'subCategories',
-    foreignKey: 'parentCategoryId',
-});
+    static async findByIdAndDelete(categoryId) {
+        const queryStr = `DELETE FROM categories WHERE id = $1 RETURNING *;`;
+        const values = [Number(categoryId)]
+        return client.query(queryStr, values);
+    }
 
-Category.belongsTo(Category, {
-    as: 'parentCategory',
-    foreignKey: 'parentCategoryId',
-});
+    static async findByIdAndupdate (categoryId, data) {
+        const keys = Object.keys(data);
+        const values = Object.values(data);
+
+        const queryStr = `UPDATE categories SET ${keys.map((key, i) => `${key} = $${i + 1}`).join(' ')} WHERE id = ${categoryId} RETURNING *;`;
+
+        return client.query(queryStr, values);
+    }
+} 
 
 module.exports = Category;

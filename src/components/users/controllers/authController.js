@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../model/User');
 const catchAsync = require('../../../utils/catchAsync');
 const AppError = require('../../../utils/AppError');
+const { decode } = require('punycode');
 
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -22,6 +23,8 @@ const createSendToken = (user, statusCode, res, message) => {
 
   if (process.env.NODE_ENV === 'production') cookiesOptions.secure = true;
 
+  console.log({user})
+
   const token = signToken(user.id);
   res.cookie('jwt', token, cookiesOptions);
   user.password = undefined;
@@ -37,29 +40,30 @@ const createSendToken = (user, statusCode, res, message) => {
 
 exports.signUp = catchAsync(async (req, res, next) => {
   const newUser = await User.create({
+    fullname: req.body.fullname,
     email: req.body.email,
     password: req.body.password,
   });
 
-  createSendToken(newUser, 201, res, 'you are signed up successfully!');
+  createSendToken(newUser.rows[0], 201, res, 'you are signed up successfully!');
 });
 
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
-    throw new AppError('please provide your email and password', 400);
+  const user = await User.findByEmail(email);
+
+  if(!user.rows[0]) {
+    throw new AppError('email or password are incorrect!', 404)
   }
 
-  const user = await User.findOne({ where: {
-    email
-  } })
+  const comparedPasswordResult = User.comparePassword(password, user.rows[0].password);
 
-  if (!user || !(await user.correctPassword(password, user.password))) {
+  if (!comparedPasswordResult) {
     throw new AppError('email or password are incorrect!', 400);
   }
 
-  createSendToken(user, 200, res, 'you are logged in successfully!');
+  createSendToken(user.rows[0], 200, res, 'you are logged in successfully!');
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -84,24 +88,30 @@ exports.protect = catchAsync(async (req, res, next) => {
     process.env.JWT_SECRET
   );
 
-  const currentUser = await User.findByPk(decodeToken.id);
-  if (!currentUser) {
+    if(!decodeToken.id) {
+      throw new AppError('token is not valid!', 401)
+    }
+
+    console.log(decodeToken);
+
+  const currentUser = await User.findById(decodeToken.id);
+
+  if (!currentUser.rows[0]) {
     throw new AppError(
       'The user belonging to this token does no longer exist!',
       401
     );
   }``
 
-  const changedPassword = currentUser.isChangedPassword(decodeToken.iat);
-  if (changedPassword) {
-    throw new AppError(
-      'user recently changed password, please log in again!',
-      401
-    );
-  }
+  // const changedPassword = currentUser.isChangedPassword(decodeToken.iat);
+  // if (changedPassword) {
+  //   throw new AppError(
+  //     'user recently changed password, please log in again!',
+  //     401
+  //   );
+  // }
 
-  req.user = currentUser;
-  res.locals.user = currentUser;
+  req.user = currentUser.rows[0];
   next();
 });
 
@@ -114,37 +124,37 @@ exports.restrictTo = function (...roles) {
   };
 };
 
-exports.updateMyPassword = catchAsync(async (req, res, next) => {
-  // 0) check if user send us currentPassword, newPassword, new confirm password
-  if (
-    !(req.body.currentPassword && req.body.password && req.body.passwordConfirm)
-  ) {
-    throw new AppError(
-      'please enter currentPassword, password and passwordConfirm!',
-      400
-    );
-  }
-  // 1) Get the user
-  const user = await User.findByPk(req.user.id);
-  // 2) check current password is correct or NOT
-  if (!(await user.correctPassword(req.body.currentPassword, user.password))) {
-    throw new AppError('current password is false!', 400);
-  }
-  // 3) if so, updatePassword
-  user.password = req.body.password;
-  user.passwordConfirm = req.body.passwordConfirm;
-  await user.save();
-  // 4) log user in
-  createSendToken(
-    user,
-    200,
-    res,
-    'your password has been updated successfully!'
-  );
-});
+// exports.updateMyPassword = catchAsync(async (req, res, next) => {
+//   // 0) check if user send us currentPassword, newPassword, new confirm password
+//   if (
+//     !(req.body.currentPassword && req.body.password && req.body.passwordConfirm)
+//   ) {
+//     throw new AppError(
+//       'please enter currentPassword, password and passwordConfirm!',
+//       400
+//     );
+//   }
+//   // 1) Get the user
+//   const user = await User.findById(req.user.id);
+//   // 2) check current password is correct or NOT
+//   if (!User.comparePassword(req.body.currentPassword, user.password)) {
+//     throw new AppError('current password is false!', 400);
+//   }
+//   // 3) if so, updatePassword
+//   user.password = req.body.password;
+//   user.passwordConfirm = req.body.passwordConfirm;
+//   await user.save();
+//   // 4) log user in
+//   createSendToken(
+//     user,
+//     200,
+//     res,
+//     'your password has been updated successfully!'
+//   );
+// });
 
 exports.deleteMe = catchAsync(async (req, res, next) => {
-  const user = await User.findOneAndDelete({ _id: req.user._id });
+  const user = await User.findByIdAndDelete(req.user.id);
   res.status(204).json({
     status: 'success',
     message: 'user has been deleted successfully!',

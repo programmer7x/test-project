@@ -9,7 +9,7 @@ exports.getAllUsers = catchAsync(async(req,res,next) => {
         status:'success',
         message: 'all users are fetched!',
         data: {
-            users
+            users: users.rows
         }
     })
 })
@@ -17,9 +17,9 @@ exports.getAllUsers = catchAsync(async(req,res,next) => {
 exports.getOne = catchAsync(async(req,res,next) => {
     const { userId } = req.params;
 
-    const user = await User.findByPk(userId)
+    const user = await User.findById(userId)
 
-    if(!user) {
+    if(user.rows.length == 0) {
         throw new AppError('user is not found by this id!', 404)
     }
 
@@ -27,7 +27,7 @@ exports.getOne = catchAsync(async(req,res,next) => {
         status: 'success',
         message: "user is found successfully!",
         data: {
-            user
+            user: user.rows[0]
         }
     })
 })
@@ -35,13 +35,9 @@ exports.getOne = catchAsync(async(req,res,next) => {
 exports.deleteOneUser = catchAsync(async(req,res,next) => {
     const { userId } = req.params;
 
-    const removedUser = await User.destroy({
-        where: {
-            id: userId
-        }
-    });
+    const removedUser = await User.findByIdAndDelete(userId);   
 
-    if(!removedUser) {
+    if(!removedUser.rows[0]) {
         throw new AppError('user is not found by this id', 404);
     }
 
@@ -49,7 +45,7 @@ exports.deleteOneUser = catchAsync(async(req,res,next) => {
         status: 'success',
         message: 'user is removed successfully!',
         data: {
-            removedUser
+            removedUser: removedUser.rows[0]
         }
     })
 })
@@ -57,12 +53,9 @@ exports.deleteOneUser = catchAsync(async(req,res,next) => {
 exports.updateOneUser = catchAsync(async(req,res,next) => {
     const { userId } = req.params;
 
+    const updatedUser = await User.findByIdAndupdate(userId, req.body);
 
-    const updatedUser = await User.update(req.body, {
-        where: {id: userId}
-    }) 
-
-    if(!updatedUser) {
+    if(!updatedUser.rows[0]) {
         throw new AppError('user is not found by this id', 404)
     }
 
@@ -70,7 +63,7 @@ exports.updateOneUser = catchAsync(async(req,res,next) => {
         status: 'success',
         message: 'user is updated successfully!',
         data: {
-            updatedUser
+            updatedUser: updatedUser.rows[0]
         }
     })
 });

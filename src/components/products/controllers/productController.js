@@ -1,15 +1,28 @@
 const catchAsync = require('../../../utils/catchAsync');
 const Product = require('../model/Product');
-const AppError = require('../../../utils/AppError')
+const AppError = require('../../../utils/AppError');
+const ProductCategory = require('../model/ProductCategory');
 
 exports.createProduct = catchAsync(async (req, res ,next) => {
-    const newProduct = await Product.create(req.body);
+    const { categoryId } = req.body;
+    const newProduct = await Product.create({
+        title: req.body.title,
+        description: req.body.description,
+        price: req.body.price
+    });
+
+    const productCategory = await ProductCategory.create({
+        product_id: newProduct.rows[0].id,
+        category_id: categoryId
+    })
+
+    console.log({productCategory})
 
     res.status(201).json({
         status: 'success',
         message: "product id createdd successfully",
         data: {
-            newProduct
+            newProduct: newProduct.rows[0]
         }
     })
 });
@@ -21,7 +34,7 @@ exports.getAllProducts = catchAsync(async (req, res ,next) => {
         status: 'success',
         message: "all products are fetched successfully!",
         data: {
-            products
+            products: products.rows[0]
         }
     })
 })
@@ -29,9 +42,9 @@ exports.getAllProducts = catchAsync(async (req, res ,next) => {
 exports.getOneProduct = catchAsync(async (req, res ,next) => {
     const {productId} = req.params;
 
-    const product = await Product.findByPk(productId);
+    const product = await Product.findById(productId);
 
-    if(!product) {
+    if(!product.rows[0]) {
         throw new AppError('product is not exist by this id!', 404);
     }
 
@@ -39,7 +52,7 @@ exports.getOneProduct = catchAsync(async (req, res ,next) => {
         status: 'success',
         message: "product is found successfully!",
         data: {
-            product
+            product: product.rows[0]
         }
     })
 });
@@ -47,13 +60,9 @@ exports.getOneProduct = catchAsync(async (req, res ,next) => {
 exports.deleteOneProduct = catchAsync(async (req, res ,next) => {
     const {productId} = req.params;
 
-    const product = await Product.destroy({
-        where: {
-            id: productId
-        }
-    });
+    const product = await Product.findByIdAndDelete(productId)
 
-    if(!product) {
+    if(!product.rows[0]) {
         throw new AppError('product is not exist by this id!', 404);
     }
 
@@ -69,14 +78,9 @@ exports.deleteOneProduct = catchAsync(async (req, res ,next) => {
 exports.updateOneProduct = catchAsync(async (req, res ,next) => {
     const { productId } = req.params;
     
-    const [rowCount , product] = await Product.update(req.body, {
-        where: {
-            id: productId
-        },
-        returning: true,
-    });
+    const updatedProduct = await Product.findByIdAndupdate(productId ,req.body);
 
-    if(!product) {
+    if(!updatedProduct.rows[0]) {
         throw new AppError('product is not exist by this id!', 404);
     }
 
@@ -84,7 +88,7 @@ exports.updateOneProduct = catchAsync(async (req, res ,next) => {
         status: 'success',
         message: "product is updated successfully!",
         data: {
-            product
+            updatedProduct: updatedProduct.rows[0]
         }
     })
 });

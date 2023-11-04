@@ -2,15 +2,19 @@ const { compareSync } = require('bcrypt');
 const client = require('../../../connectionDB')
 const AppError = require('../../../utils/AppError')
 
-class Product {
+class ProductCategory {
     constructor() {}
 
     static async create (options) {
         const keys = Object.keys(options);
-        const values = Object.values(options)
+        const values = Object.values(options);
+
+        console.log({keys, values})
 
         const queryStr = `INSERT INTO products (${keys.join(', ')}) VALUES (${values.map((key, i) => `$${i + 1}`)}) RETURNING *;`;
 
+
+        console.log({queryStr})
         return client.query(queryStr, values);
     }
 
@@ -41,4 +45,4 @@ class Product {
     }
 } 
 
-module.exports = Product;
+module.exports = ProductCategory;
