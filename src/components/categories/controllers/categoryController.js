@@ -21,7 +21,7 @@ exports.getAllCategories = catchAsync(async (req, res ,next) => {
         status: 'success',
         message: "all categories are fetched successfully!",
         data: {
-            categories: categories.rows[0]
+            categories: categories.rows
         }
     })
 })
