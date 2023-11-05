@@ -9,12 +9,8 @@ class ProductCategory {
         const keys = Object.keys(options);
         const values = Object.values(options);
 
-        console.log({keys, values})
+        const queryStr = `INSERT INTO ProductCategory (${keys.join(', ')}) VALUES (${values.map((key, i) => `$${i + 1}`)}) RETURNING *;`;
 
-        const queryStr = `INSERT INTO products (${keys.join(', ')}) VALUES (${values.map((key, i) => `$${i + 1}`)}) RETURNING *;`;
-
-
-        console.log({queryStr})
         return client.query(queryStr, values);
     }
 

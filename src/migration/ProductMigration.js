@@ -1,4 +1,4 @@
-const client = require('../connectionDB.js')
+const client = require('../connectionDB.js');
 
 const dropProductTable = () => `
     DROP TABLE IF EXISTS products;

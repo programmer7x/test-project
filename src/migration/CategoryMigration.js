@@ -29,6 +29,5 @@ const createCategoryMigration = () => `
         FOREIGN KEY (parent_category_id) REFERENCES categories(id)
 )`
 
-
 client.query(droptCategoryTable())
 client.query(createCategoryMigration())
