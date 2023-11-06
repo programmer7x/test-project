@@ -3,7 +3,7 @@ const { Product, Category } = require('../../../connectionDB');
 const AppError = require('../../../utils/AppError')
 
 exports.createProduct = catchAsync(async (req, res ,next) => {
-    const {categoryId} = req.body
+    const { categoryId } = req.body
     const newProduct = await Product.create(req.body);
 
     if(categoryId) {
@@ -57,7 +57,7 @@ exports.getOneProduct = catchAsync(async (req, res ,next) => {
 });
 
 exports.deleteOneProduct = catchAsync(async (req, res ,next) => {
-    const {productId} = req.params;
+    const { productId } = req.params;
 
     const product = await Product.destroy({
         where: {

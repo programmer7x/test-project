@@ -1,5 +1,5 @@
 const catchAsync = require('../../../utils/catchAsync');
-const {Category} = require('./../../../connectionDB');
+const {Category, Product} = require('./../../../connectionDB');
 const AppError = require('../../../utils/AppError');
 
 exports.createCategory = catchAsync(async(req,res,next) => {
@@ -47,6 +47,16 @@ exports.getOneCategory = catchAsync(async(req,res,next) => {
 
 exports.deleteOneCategory = catchAsync(async(req,res,next) => {
     const { categoryId } = req.params;
+
+    const category = await Category.findByPk(categoryId, {
+        include: {
+            model: Product
+        }
+    });
+
+    if(category.Products.length > 0) {
+        throw new AppError('you can not delete this category, because some products belongs to this category!', 400)
+    }
 
     const removedCategory = await Category.destroy({
         where: {
