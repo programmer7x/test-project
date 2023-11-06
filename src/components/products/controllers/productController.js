@@ -13,7 +13,7 @@ exports.createProduct = catchAsync(async (req, res ,next) => {
             throw new AppError('category is not found by this id!', 404)
         }
 
-        const result = await newProduct.addCategories(category);
+        const [productCategory] = await newProduct.addCategories(category);
     }
     
 
@@ -39,7 +39,7 @@ exports.getAllProducts = catchAsync(async (req, res ,next) => {
 })
 
 exports.getOneProduct = catchAsync(async (req, res ,next) => {
-    const {productId} = req.params;
+    const { productId } = req.params;
 
     const product = await Product.findByPk(productId);
 

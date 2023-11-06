@@ -1,12 +1,22 @@
-
-const sequelize = require('./connectionDB')
+const {createServer} = require('node:http')
 const app = require('./app');
-const connection = require('./connectionDB')
 const dotenv = require('dotenv');
+const { Server } = require('socket.io');
 
 dotenv.config();
 
-app.listen(process.env.PORT, () => {
-    console.log(`app is runnung on port: ${process.env.PORT}`)
+const server = createServer(app);
+
+const io = new Server(server);
+
+io.on('connection', (socket) => {
+    console.log('a user connected');
+    socket.on('disconnect', () => {
+        console.log('user is disconnected.')
+    });
+});
+
+server.listen(process.env.PORT, () => {
+    console.log(`app is runnung on port: ${process.env.PORT}`);
 })
 

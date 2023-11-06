@@ -1,3 +1,4 @@
+const { join } = require('node:path');
 const express = require('express');
 const morgan = require('morgan');
 const userRouter = require('./components/users/routes/userRouter');
@@ -6,14 +7,19 @@ const cookieParser = require('cookie-parser')
 const globalErrorHandler = require('./utils/globalErrorHandler');
 const authRouter = require('./components/users/routes/authRouter');
 const productRouter = require('./components/products/routes/producRouter')
-const sequelize = require('../src/connectionDB');
 const categoryRouter = require('./components/categories/routes/categoryRouter');
 
+
 const app = express();
+
 app.use(bodyParser.json());
 app.use(cookieParser())
 
 app.use(morgan('dev'));
+
+app.get('/', (req, res) => {
+    res.sendFile(join(__dirname, './public/index.html'));
+});
 
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/auth', authRouter);
