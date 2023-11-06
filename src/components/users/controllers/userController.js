@@ -1,5 +1,5 @@
 const catchAsync = require('../../../utils/catchAsync');
-const User = require('./../model/User');
+const {User} = require('./../../../connectionDB');
 const AppError = require('../../../utils/AppError')
 
 exports.getAllUsers = catchAsync(async(req,res,next) => {

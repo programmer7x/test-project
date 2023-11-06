@@ -1,3 +1,5 @@
+
+const sequelize = require('./connectionDB')
 const app = require('./app');
 const connection = require('./connectionDB')
 const dotenv = require('dotenv');

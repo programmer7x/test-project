@@ -1,9 +1,21 @@
 const catchAsync = require('../../../utils/catchAsync');
-const Product = require('../model/Product');
+const { Product, Category } = require('../../../connectionDB');
 const AppError = require('../../../utils/AppError')
 
 exports.createProduct = catchAsync(async (req, res ,next) => {
+    const {categoryId} = req.body
     const newProduct = await Product.create(req.body);
+
+    if(categoryId) {
+        const category = await Category.findByPk(req.body.categoryId);
+
+        if(!category) {
+            throw new AppError('category is not found by this id!', 404)
+        }
+
+        const result = await newProduct.addCategories(category);
+    }
+    
 
     res.status(201).json({
         status: 'success',
