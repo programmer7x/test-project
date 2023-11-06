@@ -36,7 +36,7 @@ Product.belongsToMany(Category, {
     otherKey: 'categoryId', // The foreign key in the junction table that references Category
 });
 
-sequelize.sync().then(result => {
+sequelize.sync({force: true}).then(result => {
     console.log('sequlize is synced now!');
 }).catch(err => {
     console.log(err);
