@@ -1,6 +1,8 @@
 const catchAsync = require('../../../utils/catchAsync');
 const AppError = require('../../../utils/AppError');
 const Category = require('../model/Category');
+const Product = require('../../products/model/Product');
+const ProductCategory = require('../../products/model/ProductCategory')
 
 exports.createCategory = catchAsync(async (req, res ,next) => {
     const newCategory = await Category.create(req.body);
@@ -47,6 +49,17 @@ exports.getOneCategory = catchAsync(async (req, res ,next) => {
 exports.deleteOneCategory = catchAsync(async (req, res ,next) => {
     const {categoryId} = req.params;
 
+    const productsBelongsToCategory = await ProductCategory.countProductsBelongsToACategoryByCategoryId(Number(categoryId));
+
+    console.log({productsBelongsToCategory})
+    
+    console.log(productsBelongsToCategory.rows)
+    console.log(Number(productsBelongsToCategory.rows[0].count))
+
+    if(Number(productsBelongsToCategory.rows[0].count) != 0) {
+        throw new AppError('you can not delete category while products belongs to this category still exist.', 400)
+    }
+        
     const category = await Category.findByIdAndDelete(categoryId)
 
     if(!category.rows[0]) {

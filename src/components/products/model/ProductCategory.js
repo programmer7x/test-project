@@ -11,6 +11,9 @@ class ProductCategory {
 
         const queryStr = `INSERT INTO ProductCategory (${keys.join(', ')}) VALUES (${values.map((key, i) => `$${i + 1}`)}) RETURNING *;`;
 
+        console.log({queryStr});
+        console.log({values})
+
         return client.query(queryStr, values);
     }
 
@@ -36,6 +39,16 @@ class ProductCategory {
         const values = Object.values(data);
 
         const queryStr = `UPDATE products SET ${keys.map((key, i) => `${key} = $${i + 1}`).join(' ')} WHERE id = ${productId} RETURNING *;`;
+
+        return client.query(queryStr, values);
+    }
+
+    static async countProductsBelongsToACategoryByCategoryId (categoryId) { 
+        const queryStr = `SELECT count(*) FROM ProductCategory WHERE category_id = $1`;
+
+        console.log({queryStr})
+
+        const values = [categoryId]
 
         return client.query(queryStr, values);
     }

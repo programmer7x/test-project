@@ -5,14 +5,20 @@ const ProductCategory = require('../model/ProductCategory');
 
 exports.createProduct = catchAsync(async (req, res ,next) => {
     const { categoryId } = req.body;
-    const newProduct = await Product.create({
+
+    console.log({categoryId})
+
+    const newProductResult = await Product.create({
         title: req.body.title,
         description: req.body.description,
         price: req.body.price
     });
 
+    const newProduct = newProductResult.rows[0]
+
+
     const productCategory = await ProductCategory.create({
-        product_id: newProduct.rows[0].id,
+        product_id: newProduct.id,
         category_id: categoryId
     })
 
@@ -22,7 +28,7 @@ exports.createProduct = catchAsync(async (req, res ,next) => {
         status: 'success',
         message: "product id createdd successfully",
         data: {
-            newProduct: newProduct.rows[0]
+            newProduct: newProduct
         }
     })
 });

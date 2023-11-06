@@ -25,6 +25,12 @@ class Product {
         return client.query(queryStr, values);
     }
 
+    static async findByCategory (categoryId) {
+        const queryStr = `SELECT * FROM products WHERE category_id = $1;`;
+        const values = [categoryId]
+        return client.query(queryStr, values);
+    }
+
     static async findByIdAndDelete(productId) {
         const queryStr = `DELETE FROM products WHERE id = $1 RETURNING *;`;
         const values = [Number(productId)]
