@@ -1,4 +1,4 @@
-require('./CategoryMigration');
-require('./ProductCategoryMigration');
-require('./ProductMigration');
 require('./userMigration');
+require('./CategoryMigration');
+require('./ProductMigration');
+require('./ProductCategoryMigration');
