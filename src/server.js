@@ -11,8 +11,15 @@ const io = new Server(server);
 
 io.on('connection', (socket) => {
     console.log('a user connected');
+
+    socket.on('chat message', (msg) => {
+        console.log('user send: ' + msg);
+
+        io.emit('chat message', msg)
+    })
+
     socket.on('disconnect', () => {
-        console.log('user is disconnected.')
+        console.log('user is disconnected.');
     });
 });
 
